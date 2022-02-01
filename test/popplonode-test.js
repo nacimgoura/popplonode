@@ -3,6 +3,8 @@ const expect = require('chai').expect;
 const spawn = require('child_process').spawn;
 const os = require('os');
 
+console.log('Popplonode', Popplonode);
+
 describe('popplonode', function () {
   it('should construct an new Popplonode object', function () {
     const poppl = new Popplonode();

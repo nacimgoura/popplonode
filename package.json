@@ -15,13 +15,14 @@
   "license": "MIT",
   "scripts": {
     "test": "mocha",
+    "node-pre-gyp": "node-pre-gyp",
     "install": "node-pre-gyp install --fallback-to-build"
   },
   "dependencies": {
     "bindings": "^1.5.0",
-    "cmake-js": "^5.2.0",
-    "nan": "^2.14.0",
-    "node-pre-gyp": "^0.13.0"
+    "cmake-js": "^6.3.0",
+    "nan": "^2.15.0",
+    "@mapbox/node-pre-gyp": "^1.0.8"
   },
   "devDependencies": {
     "chai": "^4.2.0",
@@ -29,7 +30,7 @@
   },
   "gypfile": true,
   "bundledDependencies": [
-    "node-pre-gyp"
+    "@mapbox/node-pre-gyp"
   ],
   "binary": {
     "module_name": "popplonode",

@@ -32,7 +32,7 @@ NAN_MODULE_INIT(Popplonode::Init) {
                    Popplonode::setDebug);
 
   constructor().Reset(Nan::GetFunction(tpl).ToLocalChecked());
-  Nan::Set(target, Nan::New("Popplonode").ToLocalChecked(), tpl->GetFunction());
+  Nan::Set(target, Nan::New("Popplonode").ToLocalChecked(), Nan::GetFunction(tpl).ToLocalChecked());
 }
 
 NAN_METHOD(Popplonode::New) {
@@ -48,11 +48,14 @@ NAN_METHOD(Popplonode::New) {
   }
 }
 NAN_METHOD(Popplonode::load) {
-  if (info.Length() < 1)
+  if (info.Length() < 1) {
     return Nan::ThrowTypeError("Load requires at least 1 argument");
+  }
   Popplonode* popplonode = Nan::ObjectWrap::Unwrap<Popplonode>(info.Holder());
-  String::Utf8Value val(info[0]->ToString());
-  string filename(*val);
+  Isolate* isolate = info.GetIsolate();
+  auto context = isolate->GetCurrentContext();
+  String::Utf8Value str(isolate, info[0]);
+  string filename(*str);
   popplonode->doc = poppler::document::load_from_file(filename);
   if (popplonode->doc == nullptr) {
     info.GetReturnValue().Set(Nan::False());
@@ -65,11 +68,13 @@ NAN_METHOD(Popplonode::getMetadata) {
   Popplonode* popplonode = Nan::ObjectWrap::Unwrap<Popplonode>(info.Holder());
   Local<Object> metadata = Nan::New<Object>();
   vector<string> infoKeys{popplonode->doc->info_keys()};
+  Isolate* isolate = info.GetIsolate();
+  auto context = isolate->GetCurrentContext();
   for_each(infoKeys.begin(), infoKeys.end(), [&](string infoKey) {
     Local<String> infoProp = Nan::New<String>(infoKey).ToLocalChecked();
     Local<String> infoValue =
         Nan::New<String>(popplonode->doc->info_key(infoKey).to_latin1().c_str()).ToLocalChecked();
-    metadata->Set(infoProp, infoValue);
+    metadata->Set(context, infoProp, infoValue);
   });
   Local<String> nbPageProp = Nan::New<String>("TotalNbPages").ToLocalChecked();
   Local<Number> nbPageValue = Nan::New<Number>(popplonode->doc->pages());
@@ -78,16 +83,19 @@ NAN_METHOD(Popplonode::getMetadata) {
   popplonode->doc->get_pdf_version(&major, &minor);
   string pdfVersion = std::to_string(major) + "." + std::to_string(minor);
   Local<String> numVersionValue = Nan::New<String>(pdfVersion).ToLocalChecked();
-  metadata->Set(nbPageProp, nbPageValue);
-  metadata->Set(numVersionProp, numVersionValue);
-  metadata->Set(nbPageProp, nbPageValue);
+  metadata->Set(context, nbPageProp, nbPageValue);
+  metadata->Set(context, numVersionProp, numVersionValue);
+  metadata->Set(context, nbPageProp, nbPageValue);
   info.GetReturnValue().Set(metadata);
 }
 
 NAN_METHOD(Popplonode::getTextFromPage) {
-  if (info.Length() < 2)
+  if (info.Length() < 2) {
     return Nan::ThrowTypeError("Load requires at least 2 argument");
-  double pageNumber = info[0]->NumberValue();
+  }
+  Isolate* isolate = info.GetIsolate();
+  auto context = isolate->GetCurrentContext();
+  double pageNumber = info[0]->NumberValue(context).ToChecked();
   Nan::Callback* callback = new Nan::Callback(info[1].As<Function>());
   Popplonode* popplonode = Nan::ObjectWrap::Unwrap<Popplonode>(info.Holder());
   Nan::AsyncQueueWorker(new GetTextFromPageAsync(callback, popplonode, pageNumber));
@@ -100,8 +108,9 @@ NAN_GETTER(Popplonode::getDebug) {
 }
 
 NAN_SETTER(Popplonode::setDebug) {
+  Isolate* isolate = info.GetIsolate();
   Popplonode* obj = ObjectWrap::Unwrap<Popplonode>(info.This());
-  bool input = value->BooleanValue();
+  bool input = value->BooleanValue(isolate);
   if (input) {
     poppler::set_debug_error_function([](const std::string& msg, void*) { 
       std::cerr << "poppler/" << msg << std::endl;
@@ -109,9 +118,11 @@ NAN_SETTER(Popplonode::setDebug) {
   } else {
     poppler::set_debug_error_function([](const std::string& msg, void*) { return; }, nullptr);
   }
-  obj->_debug = value->BooleanValue();
+  obj->_debug = value->BooleanValue(isolate);
 }
 
 void InitPopplonode(v8::Local<v8::Object> exports) { Popplonode::Init(exports); }
 
-NODE_MODULE(popplonode, InitPopplonode);
+NODE_MODULE_INIT() {
+    Popplonode::Init(exports);
+}

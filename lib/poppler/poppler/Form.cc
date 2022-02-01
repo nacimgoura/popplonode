@@ -29,6 +29,7 @@
 
 #include <set>
 #include <limits>
+#include <ctype.h>
 #include <stddef.h>
 #include <string.h>
 #include "goo/gmem.h"
