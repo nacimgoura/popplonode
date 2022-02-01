@@ -1,29 +1,16 @@
-const Popplonode = require('../index.js');
+const poppler = require('../index.js');
 const expect = require('chai').expect;
 const spawn = require('child_process').spawn;
 const os = require('os');
 
-console.log('Popplonode', Popplonode);
-
 describe('popplonode', function () {
-  it('should construct an new Popplonode object', function () {
-    const poppl = new Popplonode();
-    expect(poppl).to.be.instanceOf(Popplonode);
-    expect(poppl).to.have.own.property('debug');
-    expect(poppl.debug).to.be.false;
-    poppl.debug = true;
-    expect(poppl.debug).to.be.true;
-  });
-
   it('should load a pdf file', function () {
-    const poppl = new Popplonode();
-    expect(poppl.load('test/data/test.pdf')).to.true;
+    expect(poppler.load('test/data/test.pdf')).to.true;
   });
 
   it('should get the metadata from pdf file', function () {
-    const poppl = new Popplonode();
-    poppl.load('test/data/test.pdf');
-    const metadata = poppl.getMetadata();
+    poppler.load('test/data/test.pdf');
+    const metadata = poppler.getMetadata();
     expect(metadata).to.be.an('object');
     expect(metadata).to.have.own.property('CreationDate');
     expect(metadata.CreationDate).to.be.a('string');
@@ -45,9 +32,8 @@ describe('popplonode', function () {
   });
 
   it('should get the text from page of pdf file', function (done) {
-    const poppl = new Popplonode();
-    poppl.load('test/data/test.pdf');
-    poppl.getTextFromPage(0, (error, content) => {
+    poppler.load('test/data/test.pdf');
+    poppler.getTextFromPage(0, (error, content) => {
       if (error) return done(error);
       expect(content).to.be.a('string');
       done();

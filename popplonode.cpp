@@ -53,7 +53,6 @@ NAN_METHOD(Popplonode::load) {
   }
   Popplonode* popplonode = Nan::ObjectWrap::Unwrap<Popplonode>(info.Holder());
   Isolate* isolate = info.GetIsolate();
-  auto context = isolate->GetCurrentContext();
   String::Utf8Value str(isolate, info[0]);
   string filename(*str);
   popplonode->doc = poppler::document::load_from_file(filename);
@@ -85,7 +84,6 @@ NAN_METHOD(Popplonode::getMetadata) {
   Local<String> numVersionValue = Nan::New<String>(pdfVersion).ToLocalChecked();
   metadata->Set(context, nbPageProp, nbPageValue);
   metadata->Set(context, numVersionProp, numVersionValue);
-  metadata->Set(context, nbPageProp, nbPageValue);
   info.GetReturnValue().Set(metadata);
 }
 
