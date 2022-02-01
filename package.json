@@ -36,6 +36,6 @@
     "module_name": "popplonode",
     "module_path": "./build/Release/",
     "remote_path": "{version}",
-    "host": "https://github.com/istex/popplonode/releases/download/"
+    "host": "https://github.com/nacimgoura/popplonode/releases"
   }
 }
